@@ -1,0 +1,25 @@
+---
+- name: configuration
+  hosts: all
+  gather_facts: false
+  become: true
+  roles:
+    - Base	
+- name: configuration
+  hosts: frontends
+  gather_facts: false
+  become: true
+  roles:
+    - HAProxy
+- name: configuration
+  hosts: apps
+  gather_facts: false
+  become: true
+  roles:
+    - Tomcat
+- name: configuration
+  hosts: appdbs
+  gather_facts: false
+  become: true
+  roles:
+    - Postgre

@@ -1,0 +1,14 @@
+---
+# handlers file for roles/Postgre
+- name: initilize postgres
+  command: service postgresql initdb
+       creates=/var/lib/pgsql/data/postgresql.conf
+
+- name: initilize postgres some more
+  service: name=postgresql
+              enabled=yes
+              state=started 
+- name: start postgres
+  service:
+      name: postgresql.service
+      state: started
