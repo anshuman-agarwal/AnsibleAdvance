@@ -1,0 +1,7 @@
+---
+- name: Windows domain user creation
+  hosts: windows
+  vars_files:
+   - ./user_vars.yml
+  roles:
+    - win_domain_user

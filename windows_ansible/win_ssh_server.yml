@@ -1,0 +1,9 @@
+---
+- name: Windows Openssh connection
+  hosts: windows
+  vars_files:
+   - ./ssh_var.yml
+  roles:
+    - win_package_install
+    - win_service_config
+    - win_firewall

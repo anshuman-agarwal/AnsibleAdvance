@@ -23,3 +23,18 @@
   become: true
   roles:
     - Postgre
+
+- name:  "Notify the smoke tests"
+  hosts: frontends
+  tasks: 
+   - name: "Get homepages"
+     uri:
+         url: "http://frontend1.9e11.example.opentlc.com"
+         return_content: yes
+     register: homepage
+    
+   - name: "Ensure that the homepage serves real content"
+     assert:
+      that:
+              - "'Welcome to Tomcat' in homepage.content"
+#              - "'Anshuman' in homepage.content"

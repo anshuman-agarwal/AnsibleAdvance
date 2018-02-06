@@ -1,0 +1,11 @@
+---
+# tasks file for win_firewall
+- name: Windows firewall service 
+  win_firewall_rule:
+    name: SSHD
+    localport: 22
+    action: allow
+    direction: in
+    protocol: tcp
+    state: present
+    enabled: yes
