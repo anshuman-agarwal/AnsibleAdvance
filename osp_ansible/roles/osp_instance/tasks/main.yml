@@ -1,0 +1,53 @@
+---
+# tasks file for osp_instance
+- name: Create a new instance and attaches to a network and passes metadata to the instance
+  os_server:
+       state: present
+       cloud: ospcloud       
+       name: "{{ item.value.name }}"
+       image: "{{ item.value.image }}"
+       key_name: ansible_ssh
+       timeout: 200
+       flavor: "{{ item.value.flavor }}"
+       security_groups: sg_"{{ item.value.metadata.group }}"
+       nics:
+         - net-name: int_network
+       userdata: |
+        #!/bin/bash
+        curl -o /tmp/openstack.pub http://www.opentlc.com/download/ansible_bootcamp/openstack_keys/openstack.pub
+        cat /tmp/openstack.pub >> /home/cloud-user/.ssh/authorized_keys
+        curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
+        cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
+       meta:
+         group: "{{ item.value.metadata.group }}"
+         deployment_name: "{{ item.value.metadata.deployment_name }}"
+  with_dict: "{{ instance }}"
+  register: instanceip
+
+- name: floating IP 
+  os_floating_ip:
+     cloud: ospcloud
+     state: present
+     reuse: yes
+     server: "{{ item.value.name }}"
+     network: ext_network
+     wait: true
+     timeout: 180 
+  with_dict: "{{ instance }}"
+  register:  instancefloatingip
+
+- name: Show "{{ instanceip }}" public IP
+  debug: 
+    msg: "{{ item | json_query('floating_ip.floating_ip_address') }}"
+  with_items: 
+     - "{{ instancefloatingip.results }}"
+
+- name: Wait for "{{ instance_name }}" to be available
+  wait_for:
+      host: "{{ item | json_query('floating_ip.floating_ip_address') }}"
+      port: 22
+      search_regex: OpenSSH
+      timeout: 600
+  delegate_to: "{{ inventory_hostname }}"
+  with_items:
+     - "{{ instancefloatingip.results }}"

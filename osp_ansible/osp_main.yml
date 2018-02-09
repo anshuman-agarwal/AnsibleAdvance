@@ -1,0 +1,52 @@
+---
+- name: main file
+  hosts: jumpbox
+  vars_files: 
+     - instance_var.yaml
+  roles:
+    - osp_network
+    - osp_flavour
+    - ssh_keys
+    - osp_security
+    - osp_instance
+    - osp_fact
+
+- name: configuration
+  hosts: all
+  gather_facts: false
+  become: true
+  roles:
+    - Base
+- name: configuration
+  hosts: frontends
+  gather_facts: false
+  become: true
+  roles:
+    - HAProxy
+- name: configuration
+  hosts: apps
+  gather_facts: false
+  become: true
+  roles:
+    - Tomcat
+- name: configuration
+  hosts: appdbs
+  gather_facts: false
+  become: true
+  roles:
+    - Postgre
+
+- name:  "Notify the smoke tests"
+  hosts: frontends
+  tasks:
+   - name: "Get homepages"
+     uri:
+         url: "http://{{ inventory_hostname }}/"
+         return_content: yes
+     register: homepage
+
+   - name: "Ensure that the homepage serves real content"
+     assert:
+      that:
+              - "'Welcome to Tomcat' in homepage.content"
+#              - "'Anshuman' in homepage.content"                                               

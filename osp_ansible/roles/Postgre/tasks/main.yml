@@ -1,0 +1,13 @@
+---
+# tasks file for roles/Postgre
+ # - name: install progress
+  #  command: "yum install -y postgresql-server"
+
+- name: install postgres
+  yum:
+     name: postgresql-server
+     state: latest
+  notify: 
+    - initilize postgres
+    - start postgres
+    - initilize postgres some more
